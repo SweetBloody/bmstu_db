@@ -7,7 +7,7 @@
 |...|⛔|
 
 ## Семинары
-|[Семинар 1]()|✅|
+|[Семинар 1](https://github.com/SweetBloody/bmstu_db/wiki/Seminar-1)|✅|
 |-|-|
 |Семинар 2|⛔|
 |...|⛔|
