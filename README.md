@@ -4,7 +4,7 @@
 |Лекция|Готовность|
 |-|-|
 |[Лекция 1](theory/lections/lec_01.md)|✅|
-|[Лекция 2](theory/lections/lec_01.md)|✅|
+|[Лекция 2](theory/lections/lec_02.md)|✅|
 |...|⛔|
 
 ## Семинары
