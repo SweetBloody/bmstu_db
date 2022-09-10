@@ -1,15 +1,17 @@
 # Материалы по курсу "Базы данных"
 
 ## Лекции
-|[Лекция 1](https://github.com/SweetBloody/bmstu_db/wiki/Lection-1)|✅|
+|Лекция|Готовность|
 |-|-|
-|Лекция 2|⛔|
+|[Лекция 1](theory/lections/lec_01.md)|✅|
+|[Лекция 2](theory/lections/lec_02.md)|✅|
 |...|⛔|
 
 ## Семинары
-|[Семинар 1](https://github.com/SweetBloody/bmstu_db/wiki/Seminar-1)|✅|
+|Семинар|Готовность|
 |-|-|
-|Семинар 2|⛔|
+|[Семинар 1](theory/seminars/sem_01.md)|✅|
+|[Семинар 2]()|⛔|
 |...|⛔|
 
 
