@@ -6,6 +6,7 @@
 |[Лекция 1](theory/lections/lec_01.md)|✅|
 |[Лекция 2](theory/lections/lec_02.md)|✅|
 |[Лекция 3](theory/lections/lec_03.md)|✅|
+|[Лекция 4](theory/lections/lec_04.md)|✅|
 |...|⛔|
 
 ## Семинары
