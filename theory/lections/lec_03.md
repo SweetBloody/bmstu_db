@@ -45,6 +45,7 @@
 |1|Геркулес|2|
 > В последней строке - аномалия вставки
 
+---
 Примеры
 1) `Принцесса[id, имя] union Принц[id, имя]`
    * Если будет `Принцесса[id, имя] union Принц[number, имя]`, то надо переименовать: `Принцесса[id, имя] union (Принц[id, имя] RENAME number AS id)`
@@ -52,30 +53,32 @@
 3) `Принцесса TIMES Принц`
 4) `Принцесса WHERE рост > 200 AND рост < 250`
 5) `Принцесса JOIN (((Принц RENAME id AS number) RENAME имя AS имя_принца) RENAME Принцесса AS id)`
-6) ```
-   R = {A, B, C, D} 
-   S = {C, D}
-   ```
-TODO
+6) 
+    ```
+    R = {A, B, C, D} 
+    S = {C, D}
+    ```
+    ![img.png](imgs/img.png)
 
-Пример:
- Таблица поставщиков: S (S_number : integer; S_name : )
+---
+Пример:  
+ Таблица поставщиков: S (S_number:integer; S_name:string)
 
 1) Получить названия поставщиков, которые поставляют детали под номером 2
-```
-((S join SP) where P_number = 2)[S_name]
-S_number
-```
+    ```
+    ((S join SP) where P_number = 2)[S_name]
+    S_number
+    ```
 2) Получить названия поставщиков, которые поставляют детали красного цвета
-```
-(((S join SP) join P) where Color = "Красный")[S_name]
-(Можно и наоборот P->SP->S)
-```
+    ```
+    (((S join SP) join P) where Color = "Красный")[S_name]
+    (Можно и наоборот P->SP->S)
+    ```
 3) Получить пары поставщиков, которые находятся в одном городе
-```
-((S rename S_number as firstS_number)[firstS_number, City]) join 
-((S rename S_number as secondS_number)[secondS_number, City]) where
-firstS_number > secondS_number)[firstS_number, secondS_number]
-```
+    ```
+    ((S rename S_number as firstS_number)[firstS_number, City]) join 
+    ((S rename S_number as secondS_number)[secondS_number, City]) where
+    firstS_number > secondS_number)[firstS_number, secondS_number]
+    ```
 
 
