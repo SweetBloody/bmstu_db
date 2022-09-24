@@ -26,18 +26,17 @@ having|5|4|
 order by|6|6|
 
 ### Запросы
-`В select должны быть только скаляры (все кроме таблиц)`
+> В select должны быть только скаляры (все кроме таблиц)
 1) **SELECT**  
 Общий вид запроса: `select * from table_name`
-```
+   ```
    * select 1 + 1 [from dual] (dual - таблица для Oracle из одной ячейки с названием dummy)
    * select now() (текущее время СУБД)
-```
-```sql
-select [t.]name AS "Имя корпуса", px, py AS y 
-from table_name AS t
-
-```
+   ```
+   ```sql
+   select [t.]name AS "Имя корпуса", px, py AS y 
+   from table_name AS t
+   ```
 2) **WHERE**  
    where <предикат>  
 Предикаты: 

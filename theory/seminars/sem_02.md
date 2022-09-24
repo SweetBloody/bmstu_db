@@ -38,7 +38,7 @@ POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
 
 ### Примеры работы с языком SQL (DDL, DML)  (TODO)
 
-```
+```sql
 drop table if exists public.dinos;
 create table public.dinos(
     name text primary key, // primary key - ограничение
@@ -57,8 +57,6 @@ create table public.type(
     id int,
     name text
 );
-
-
 ```
 
 
