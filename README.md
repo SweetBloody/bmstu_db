@@ -15,6 +15,7 @@
 |[Семинар 1](theory/seminars/sem_01.md)|✅|
 |[Семинар 2](theory/seminars/sem_02.md)|✅|
 |[Семинар 3](theory/seminars/sem_03.md)|✅|
+|[Семинар 4](theory/seminars/sem_04.md)|✅|
 |...|⛔|
 
 
