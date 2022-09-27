@@ -124,7 +124,7 @@ B (id) - 20 строк
 |3|null|bonus2|
 
 ```sql
-select coalisce(S.id, B.id, 0) as id,
+select coalesce(S.id, B.id, 0) as id,
     S.sub, B.bonus
 from S full join B
     on S.id = B.id
