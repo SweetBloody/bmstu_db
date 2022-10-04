@@ -3,7 +3,7 @@
 select au.brand, au.model, au.price, au.prod_year
 from automobiles as au join manufacturers as mn on au.brand = mn.brand
 where au.prod_year > 2012
-    and au.price < 1000000
+    and au.price < 1000000**
     and mn.country = 'Япония'
 group by au.price, au.brand, au.model, au.prod_year;
 
@@ -20,227 +20,207 @@ from manufacturers
 where country like '%лия%';
 
 -- 4. Инструкция SELECT, использующая предикат IN с вложенным подзапросом.
--- -- Получить список заказов для клиентов из Лондона, оформленных через сотрудника 1
--- SELECT OrderID, CustomerID, EmployeeID, OrderDate
--- FROM Orders
--- WHERE CustomerID IN (SELECT CustomerID
---  FROM Customers
---  WHERE City = 'London' )
---  AND EmployeeID = 1
+-- Список двигателей автомобилей с полным приводом, мощность которых больше 175 л с
+select vin, power, capacity, consumption
+from engines
+where vin in (select vin
+        from automobiles
+        where transmission = 'Полный')
+    and power > 175;
 
--- 5. Инструкция SELECT, использующая предикат EXISTS с вложенным
--- подзапросом.
--- SELECT ProductID, ProductName
--- FROM Products
--- WHERE EXISTS (SELECT Products.ProductID
---  FROM Products LEFT OUTER JOIN [Order Details]
---  ON Products.ProductID = [Order Details].ProductID
---  WHERE [Order Details].ProductID IS NULL
--- )
+-- 5. Инструкция SELECT, использующая предикат EXISTS с вложенным подзапросом.
+-- Салоны-представители Nissan
+select ogrn, full_name, address
+from showrooms
+where exists (select *
+        from showrooms
+        where brand is not null)
+    and brand = 'Nissan';
 
 -- 6. Инструкция SELECT, использующая предикат сравнения с квантором.
--- SELECT ProductID, ProductName, UnitPrice
--- FROM Products
--- WHERE UnitPrice > ALL ( SELECT UnitPrice
---  FROM Products
---  WHERE CategoryID = 2 )
+-- Производители, основанные раньше всех российских производителей
+select brand, found_year, country
+from manufacturers
+where found_year < all(select found_year
+        from manufacturers
+        where country = 'Россия');
 
--- 7. Инструкция SELECT, использующая агрегатные функции в выражениях
--- столбцов.
--- SELECT AVG(TotalPrice) AS 'Actual AVG',
---  SUM(TotalPrice) / COUNT(OrderID) AS 'Calc AVG'
--- FROM ( SELECT OrderID, SUM(UnitPrice*Quantity*(1-Discount)) AS TotalPrice
---  FROM [Order Details]
---  GROUP BY OrderID
--- ) AS TotOrders
 
--- 8. Инструкция SELECT, использующая скалярные подзапросы в выражениях
--- столбцов.
--- SELECT ProductID, UnitPrice,
---  ( SELECT AVG(UnitPrice)
---  FROM [Order Details]
---  WHERE [Order Details].ProductID = Products.ProductID) AS AvgPrice,
---  ( SELECT MIN(UnitPrice)
---  FROM [Order Details]
---  WHERE [Order Details].ProductID = Products.ProductID ) AS MaxPrice,
---  ProductName
--- FROM Products
--- WHERE CategoryID = 1
+-- 7. Инструкция SELECT, использующая агрегатные функции в выражениях столбцов.
+-- Средний расход по маркам автомобилей
+select brand, avg(consumption) as avg_consumption
+from automobiles as au join engines as en on au.vin = en.vin
+group by brand;
+
+
+-- 8. Инструкция SELECT, использующая скалярные подзапросы в выражениях столбцов.
+-- Для сравнения со средней ценой авто после 2020 года
+select brand, model, prod_year, price,
+       (select avg(price)
+        from automobiles
+        where prod_year > 2020) as avg_price
+from automobiles;
+
 
 -- 9. Инструкция SELECT, использующая простое выражение CASE.
--- SELECT CompanyName, OrderID,
---  CASE YEAR(OrderDate)
---  WHEN YEAR(Getdate()) THEN 'This Year'
---  WHEN YEAR(GetDate()) - 1 THEN 'Last year'
---  ELSE CAST(DATEDIFF(year, OrderDate, Getdate()) AS varchar(5)) + ' years ago'
---  END AS 'When'
--- FROM Orders JOIN Customers ON Orders.CustomerID = Customers.CustomerID
+-- Определение класса авто в зависимости от привода
+select brand, model, transmission,
+       case transmission
+            when 'Передний' then 'Дефолт'
+            when 'Полный' then 'Внедорожник'
+            when 'Задний' then 'Дрифт-корч'
+        end as Class
+from automobiles;
 
 -- 10. Инструкция SELECT, использующая поисковое выражение CASE.
--- SELECT ProductName,
---  CASE
---  WHEN UnitPrice < 10 THEN 'Inexpensive'
---  WHEN UnitPrice < 50 THEN 'Fair'
---  WHEN UNitPrice < 100 THEN 'Expensive'
---  ELSE 'Very Expensive'
---  END AS Price
--- FROM products
+-- Определение класса авто в зависимости от мощности
+select brand, model, power,
+       case
+            when power < 100 then 'Ведро'
+            when power between 100 and 200 then 'Семейный'
+            when power > 200 then 'Спорткар'
+        end as Class
+from automobiles as au join engines as en on au.vin = en.vin;
 
--- 11. Создание новой временной локальной таблицы из результирующего набора
--- данных инструкции SELECT.
--- SELECT ProductID, SUM(Quantity) AS SQ,
---  CAST(SUM(UnitPrice*Quantity*(1.0-Discount))AS money) AS SR
--- INTO #BestSelling
--- FROM [Order Details]
--- WHERE ProductID IS NOT NULL
--- GROUP BY productID
+-- 11. Создание новой временной локальной таблицы из результирующего набора данных инструкции SELECT.
+-- Получить таблицу с названием салона и фио владельца
+create temp table if not exists showroom_owners as
+select sh.full_name, cu.first_name, cu.surname, cu.otch
+from showrooms as sh join customers as cu on sh.owner_id = cu.id;
 
--- 12. Инструкция SELECT, использующая вложенные коррелированные
--- подзапросы в качестве производных таблиц в предложении FROM.
--- SELECT 'By units' AS Criteria, ProductName as 'Best Selling'
--- FROM Products P JOIN ( SELECT TOP 1 ProductID, SUM(Quantity) AS SQ
---  FROM [Order Details]
---  GROUP BY productID
---  ORDER BY SQ DESC ) AS OD ON OD.ProductID = P.ProductID
--- UNION
--- SELECT 'By revenue' AS Criteria, ProductName as 'Best Selling'
--- FROM Products P JOIN ( SELECT TOP 1 ProductID,
---  SUM(UnitPrice*Quantity*(1-Discount)) AS SR
---  FROM [Order Details]
---  GROUP BY ProductID
---  ORDER BY SR DESC) AS OD ON OD.ProductID = P.ProductID
+-- 12. Инструкция SELECT, использующая вложенные коррелированные подзапросы в качестве производных таблиц в предложении FROM.
+-- Список моделей, которые представлены только в одном салоне
+select *
+from automobiles au1
+where au1.model not in (
+    select au2.model
+    from automobiles au2
+    where au1.showroom_ogrn <> au2.showroom_ogrn
+    );
 
--- 13. Инструкция SELECT, использующая вложенные подзапросы с уровнем
--- вложенности 3.
--- SELECT 'By units' AS Criteria, ProductName as 'Best Selling'
--- FROM Products
--- WHERE ProductID = ( SELECT ProductID
---  FROM [Order Details]
---  GROUP BY ProductID
---  HAVING SUM(Quantity) = ( SELECT MAX(SQ)
---  FROM ( SELECT SUM(Quantity) as SQ
---  FROM [Order Details]
---  GROUP BY ProductID
---  ) AS OD
---  )
---  )
+-- 13. Инструкция SELECT, использующая вложенные подзапросы с уровнем вложенности 3.
+select vin, power
+from engines
+where vin in (select vin
+    from automobiles
+    where brand in (select brand
+        from manufacturers
+        where country = 'Италия'));
 
--- 14. Инструкция SELECT, консолидирующая данные с помощью предложения
--- GROUP BY, но без предложения HAVING.
--- -- Для каждого заказанного продукта категории 1 получить его цену, среднюю цену,
--- минимальную цену и название продукта
--- SELECT P.ProductID, P.UnitPrice, P.ProductName
---  AVG(OD.UnitPrice) AS AvgPrice,
---  MIN(OD.UnitPrice) AS MinPrice,
--- FROM Products P LEFT OUTER JOIN [Order Details] OD ON OD.ProductID = P.ProductID
--- WHERE CategoryID = 1
--- GROUP BY P.productID, P.UnitPrice, P.ProductName
+-- 14. Инструкция SELECT, консолидирующая данные с помощью предложения GROUP BY, но без предложения HAVING.
+-- Минимальная и максимальная мощность каждой модели
+select au.brand, au.model, min(en.power) as min_power, max(en.power) as max_power
+from automobiles as au join engines as en on au.vin = en.vin
+group by au.brand, au.model;
 
--- 15. Инструкция SELECT, консолидирующая данные с помощью предложения
--- GROUP BY и предложения HAVING.
--- -- Получить список категорий продуктов, средняя цена которых больше общей средней цены
--- продуктов
--- SELECT CategoryID, AVG(UnitPrice) AS 'Average Price'
--- FROM Products P
--- GROUP BY CategoryID
--- HAVING AVG(UnitPrice) > ( SELECT AVG(UnitPrice) AS MPrice
---  FROM Products)
+-- 15. Инструкция SELECT, консолидирующая данные с помощью предложения GROUP BY и предложения HAVING.
+-- Модели авто со средней ценой выше, чем средняя цена по всем авто
+select model, avg(price) as avg_price
+from automobiles
+group by model
+having avg(price) > (select avg(price)
+    from automobiles);
 
--- 16. Однострочная инструкция INSERT, выполняющая вставку в таблицу одной
--- строки значений.
--- INSERT INTO Products (ProductName, SupplierID, CategoryID, QuantityPerUnit,
---  ReorderLevel, Discontinued)
--- VALUES ('Donut', NULL, NULL, '6 pieces', DEFAULT, DEFAULT)
+-- 16. Однострочная инструкция INSERT, выполняющая вставку в таблицу одной строки значений.
+insert into manufacturers(brand, country, found_year, founder)
+values ('Red Bull', 'Венгрия', 1967, 'Max Ferstappen');
 
--- 17. Многострочная инструкция INSERT, выполняющая вставку в таблицу
--- результирующего набора данных вложенного подзапроса.
--- INSERT INTO [Order Details] (OrderID, ProductID, Unitprice, Quantity, Discount)
--- SELECT ( SELECT MAX(OrderID)
---  FROM Orders
---  WHERE CustomerID = 'ALFKI' ),
---  ProductID, UnitPrice, 10, 0.1
--- FROM Products
--- WHERE ProductName = ‘Tofu'
+-- 17. Многострочная инструкция INSERT, выполняющая вставку в таблицу результирующего набора данных вложенного подзапроса.
+insert into showrooms(ogrn, full_name, address, owner_id, brand)
+select (select max(age)
+    from customers
+    where first_name = 'Федор'),
+       au.model, ma.country, 228, null
+from automobiles as au join manufacturers as ma on au.brand = ma.brand
+where country = 'Италия';
 
--- 18. Простая инструкция UPDATE.
--- UPDATE Products
--- SET UnitPrice = UnitPrice * 1.5
--- WHERE ProductID = 35
+-- 18. Простая инструкция UPDATE
+-- Увеличение стоимости авто с АКПП на 10%
+update automobiles
+set price = 100
+where prod_year = 2022
+returning *;
 
 -- 19. Инструкция UPDATE со скалярным подзапросом в предложении SET.
--- UPDATE Products
--- SET UnitPrice = ( SELECT AVG(UnitPrice)
---  FROM [Order Details]
---  WHERE ProductID = 37 )
--- WHERE ProductID = 37
+-- Для всех 4-цилиндровых двигателей заменить на максимальную мощность среди 4-цилиндровых двигателей
+update engines
+set power = (select max(power)
+             from engines
+             where cylinders = 4)
+where cylinders = 4
+returning *;
 
 -- 20. Простая инструкция DELETE.
--- DELETE Orders
--- WHERE CustomerID IS NULL
+delete from manufacturers
+where country = 'Палау';
 
--- 21. Инструкция DELETE с вложенным коррелированным подзапросом в
--- предложении WHERE.
--- -- Пример для базы данных AdventureWorks
--- DELETE FROM Production.Product
--- WHERE ProductID IN ( SELECT Product.ProductID
---  FROM Production.Product LEFT OUTER JOIN Sales.SalesOrderDetail
---  ON Product.ProductID = SalesOrderDetail.ProductID
---  WHERE SalesOrderDetail.ProductID IS NULL
---  AND Product.ProductSubCategoryID = 5)
+-- 21. Инструкция DELETE с вложенным коррелированным подзапросом в предложении WHERE.
+-- Удаление всех Павлов, которые не являются владельцами автосалонов
+delete from automobiles
+where brand in (select brand
+                from manufacturers
+                where found_year < 1900)
+returning *;
 
--- 22. Инструкция SELECT, использующая простое обобщенное табличное
--- выражение
--- -- Пример для базы данных SPJ
--- WITH CTE (SupplierNo, NumberOfShips) AS (
---  SELECT Sno, COUNT(*) AS Total
---  FROM SPJ
---  WHERE Sno IS NOT NULL
---  GROUP BY Sno
--- )
--- SELECT AVG(NumberOfShips) AS 'Среднее количество поставок для поставщиков'
--- FROM CTE
+-- 22. Инструкция SELECT, использующая простое обобщенное табличное выражение
+-- Вывод брендов, у которых представлено автомобилей больше среднего по всем брендам
+with num_brands (brand, number) as (
+    select brand, count(*)
+    from automobiles
+    group by brand
+)
 
--- 23. Инструкция SELECT, использующая рекурсивное обобщенное табличное
--- выражение.
--- -- Создание таблицы.
--- CREATE TABLE dbo.MyEmployees (
---  EmployeeID smallint NOT NULL,
---  FirstName nvarchar(30) NOT NULL,
---  LastName nvarchar(40) NOT NULL,
---  Title nvarchar(50) NOT NULL,
---  DeptID smallint NOT NULL,
---  ManagerID int NULL,
---  CONSTRAINT PK_EmployeeID PRIMARY KEY CLUSTERED (EmployeeID ASC)
--- );
--- -- Заполнение таблицы значениями.
--- INSERT INTO dbo.MyEmployees
--- VALUES (1, N'Иван', N'Петров', N'Главный исполнительный директор',16,NULL) ;
--- -- Определение ОТВ
--- WITH DirectReports (ManagerID, EmployeeID, Title, DeptID, Level) AS
--- (
---  -- Определение закрепленного элемента
---  SELECT e.ManagerID, e.EmployeeID, e.Title, e.DeptID, 0 AS Level
---  FROM dbo.MyEmployees AS e
---  WHERE ManagerID IS NULL
---  UNION ALL
---  -- Определение рекурсивного элемента
---  SELECT e.ManagerID, e.EmployeeID, e.Title, e.DeptID, Level + 1
---  FROM dbo.MyEmployees AS e INNER JOIN DirectReports AS d
---  ON e.ManagerID = d.EmployeeID
--- )
--- -- Инструкция, использующая ОТВ
--- SELECT ManagerID, EmployeeID, Title, DeptID, Level
--- FROM DirectReports;
---
+select *
+from num_brands
+where number > (select avg(number)
+                from num_brands);
+
+-- 23. Инструкция SELECT, использующая рекурсивное обобщенное табличное выражение.
+with recursive otv_empl (id, name, m_id, level) as (
+-- Якорь----
+    select id, name, m_id, 0 as level
+    from empl,
+    where m_id is null
+-- -----
+    union all
+-- шаг рекурсии
+    select e.id, e.name, e.m_id, otv.level + 1
+    from empl e inner join otv_empl otv
+        on e.m_id = otv.id
+-- -----
+    )
+    select *
+    from otv_empl
+
+
 -- 24. Оконные функции. Использование конструкций MIN/MAX/AVG OVER()
 -- -- Для каждой заданной группы продукта вывести среднее значение цены
--- SELECT P.ProductID, P.UnitPrice, P.ProductName, OD.UnitPrice,
---  AVG(OD.UnitPrice) OVER(PARTITION BY P.productID, P.ProductName) AS AvgPrice,
---  MIN(OD.UnitPrice) OVER(PARTITION BY P.productID, P.ProductName) AS MinPrice,
---  MAX(OD.UnitPrice) OVER(PARTITION BY P.productID, P.ProductName) AS MaxPrice
--- FROM Products P LEFT OUTER JOIN [Order Details] OD
---  ON OD.ProductID = P.ProductID
---
+select brand, model, price,
+ avg(price) over (partition by brand) as avg_brand_price,
+ min(price) over (partition by brand order by model) as min_brand_price,
+ max(price) over (partition by model) as max_model_price
+from automobiles;
+
 -- 25. Оконные фнкции для устранения дублей
--- Придумать запрос, в результате которого в данных появляются полные дубли.
--- Устранить дублирующиеся строки с использованием функции ROW_NUMBER().
+-- Дублирование мужчин возрастом более 50 лет
+insert into customers (surname, first_name, otch, age, sex)
+select surname, first_name, otch, age, sex
+from customers
+where age > 50 and sex = 'мужской';
+
+-- Удаление дублей
+with double_cust (id, surname, first_name, otch, age, sex, r_n) as (
+    select *,
+    row_number() over (partition by surname, first_name, otch, age, sex order by id) as r_n
+    from customers)
+
+-- select *
+-- from double_cust
+-- where r_n > 1
+-- order by surname, first_name, otch, age, sex
+
+delete from customers
+where id in (select id
+             from double_cust
+             where double_cust.r_n != 1)
+    and id > 3000
