@@ -3,7 +3,7 @@
 select au.brand, au.model, au.price, au.prod_year
 from automobiles as au join manufacturers as mn on au.brand = mn.brand
 where au.prod_year > 2012
-    and au.price < 1000000**
+    and au.price < 1000000
     and mn.country = 'Япония'
 group by au.price, au.brand, au.model, au.prod_year;
 
@@ -126,13 +126,15 @@ insert into manufacturers(brand, country, found_year, founder)
 values ('Red Bull', 'Венгрия', 1967, 'Max Ferstappen');
 
 -- 17. Многострочная инструкция INSERT, выполняющая вставку в таблицу результирующего набора данных вложенного подзапроса.
-insert into showrooms(ogrn, full_name, address, owner_id, brand)
-select (select max(age)
-    from customers
-    where first_name = 'Федор'),
-       au.model, ma.country, 228, null
-from automobiles as au join manufacturers as ma on au.brand = ma.brand
-where country = 'Италия';
+insert into customers(surname, first_name, otch, age, sex)
+select (select country
+    from manufacturers
+    where found_year >= (select max(found_year)
+        from manufacturers)
+    limit 1),
+       brand, 'Моделевич', 77, 'мужской'
+from automobiles
+where prod_year > 2010;
 
 -- 18. Простая инструкция UPDATE
 -- Увеличение стоимости авто с АКПП на 10%
@@ -156,10 +158,10 @@ where country = 'Палау';
 
 -- 21. Инструкция DELETE с вложенным коррелированным подзапросом в предложении WHERE.
 -- Удаление всех Павлов, которые не являются владельцами автосалонов
-delete from automobiles
-where brand in (select brand
+delete from customers
+where first_name in (select brand
                 from manufacturers
-                where found_year < 1900)
+                where found_year > 1900)
 returning *;
 
 -- 22. Инструкция SELECT, использующая простое обобщенное табличное выражение
@@ -176,25 +178,23 @@ where number > (select avg(number)
                 from num_brands);
 
 -- 23. Инструкция SELECT, использующая рекурсивное обобщенное табличное выражение.
-with recursive otv_empl (id, name, m_id, level) as (
+with recursive auto_anc (vin, brand, model, distance, lvl) as (
 -- Якорь----
-    select id, name, m_id, 0 as level
-    from empl,
-    where m_id is null
+    select vin, brand, model, anc_auto, 0 as lvl
+    from automobiles
+    where anc_auto is null
 -- -----
     union all
 -- шаг рекурсии
-    select e.id, e.name, e.m_id, otv.level + 1
-    from empl e inner join otv_empl otv
-        on e.m_id = otv.id
+    select au.vin, au.brand, au.model, au.anc_auto, anc.lvl + 1
+    from automobiles au inner join auto_anc anc on au.anc_auto = anc.vin
 -- -----
     )
     select *
-    from otv_empl
+    from auto_anc;
 
 
 -- 24. Оконные функции. Использование конструкций MIN/MAX/AVG OVER()
--- -- Для каждой заданной группы продукта вывести среднее значение цены
 select brand, model, price,
  avg(price) over (partition by brand) as avg_brand_price,
  min(price) over (partition by brand order by model) as min_brand_price,
@@ -214,10 +214,6 @@ with double_cust (id, surname, first_name, otch, age, sex, r_n) as (
     row_number() over (partition by surname, first_name, otch, age, sex order by id) as r_n
     from customers)
 
--- select *
--- from double_cust
--- where r_n > 1
--- order by surname, first_name, otch, age, sex
 
 delete from customers
 where id in (select id

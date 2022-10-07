@@ -8,7 +8,7 @@ create table public.manufacturers(
 
 drop table if exists customers cascade;
 create table public.customers(
-    id int primary key,
+    id int generated always as identity primary key,
     surname varchar(15) not null,
     first_name varchar(15) not null,
     otch varchar(15),
@@ -37,6 +37,7 @@ create table public.automobiles(
     transmission text,
     gearbox text,
 	showroom_ogrn varchar(13) not null,
+	anc_auto varchar(17),
 
     foreign key (brand) references public.manufacturers(brand),
 	foreign key (showroom_ogrn) references public.showrooms(ogrn)

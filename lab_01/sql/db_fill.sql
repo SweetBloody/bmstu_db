@@ -6,7 +6,6 @@ copy public.manufacturers(
 from '/db_data/csv_files/manufacturers.csv' delimiter ',' CSV;
 
 copy public.customers(
-    id,
     surname,
     first_name,
     otch,
@@ -30,7 +29,8 @@ copy public.automobiles(
     prod_year,
     transmission,
     gearbox,
-	showroom_ogrn)
+	showroom_ogrn,
+    anc_auto)
 from '/db_data/csv_files/autos.csv'  delimiter ',' CSV;
 
 copy public.engines(
