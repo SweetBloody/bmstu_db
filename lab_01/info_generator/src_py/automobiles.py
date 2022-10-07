@@ -36,11 +36,17 @@ def generate_autos(auto, number, showroom_list):
         vin = generate_vin()
         while check_unique_vin(auto_list, vin) == 1:
             vin = generate_vin()
-        price = randint(500000, 10500000)
+        price = randint(500000, 10000000)
         transmission = choice(transmission_list)
         gearbox = choice(gearbox_list)
         ogrn_showroom = choice(showroom_list)[0]
-        auto_list.append([vin, keys[key_ind], auto[model][key_model][0], price, year, transmission, gearbox, ogrn_showroom])
+
+        if i == 0:
+            anc_auto = ''
+        else:
+            anc_auto = choice(auto_list)[0]
+
+        auto_list.append([vin, keys[key_ind], auto[model][key_model][0], price, year, transmission, gearbox, ogrn_showroom, anc_auto])
 
     print("List of automobiles - Successfully")
     return auto_list
