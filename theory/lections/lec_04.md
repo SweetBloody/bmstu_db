@@ -24,8 +24,8 @@ add sum(Qty) as total
 3. __Группировка__
 ```sql
 SP group  {Pno, Qty} as PQ
---{Sno, PQ}
---Pr:={Pno, Qty}
+-- {Sno, PQ}
+-- Pr:={Pno, Qty}
 ```
 
 4. __Сравнение__  
