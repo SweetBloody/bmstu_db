@@ -3,7 +3,7 @@
 ### Оконные функции
 lead и lag
 
-kpp
+kpp:
 
 |id|type|dttm|
 |---|---|---|
