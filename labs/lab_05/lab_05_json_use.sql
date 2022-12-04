@@ -152,3 +152,5 @@ select data->>'vin',
 from json_help
 where data->>'gearbox' = 'Механическая';
 
+
+select * from manufacturers

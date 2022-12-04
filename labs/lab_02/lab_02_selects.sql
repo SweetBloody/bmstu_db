@@ -30,11 +30,11 @@ where vin in (select vin
 
 -- 5. Инструкция SELECT, использующая предикат EXISTS с вложенным подзапросом.
 -- Салоны-представители Nissan
-select ogrn, full_name, address
-from showrooms
+select a.ogrn, a.full_name, a.address
+from showrooms a
 where exists (select *
         from showrooms
-        where brand is not null)
+        where showrooms.full_name like '%A%')
     and brand = 'Nissan';
 
 -- 6. Инструкция SELECT, использующая предикат сравнения с квантором.
@@ -88,6 +88,9 @@ create temp table if not exists showroom_owners as
 select sh.full_name, cu.first_name, cu.surname, cu.otch
 from showrooms as sh join customers as cu on sh.owner_id = cu.id;
 
+select *
+from showroom_owners;
+
 -- 12. Инструкция SELECT, использующая вложенные коррелированные подзапросы в качестве производных таблиц в предложении FROM.
 -- Список моделей, которые представлены только в одном салоне
 select *
@@ -97,6 +100,7 @@ where au1.model not in (
     from automobiles au2
     where au1.showroom_ogrn <> au2.showroom_ogrn
     );
+
 
 -- 13. Инструкция SELECT, использующая вложенные подзапросы с уровнем вложенности 3.
 select vin, power
@@ -171,7 +175,6 @@ with num_brands (brand, number) as (
     from automobiles
     group by brand
 )
-
 select *
 from num_brands
 where number > (select avg(number)
@@ -219,4 +222,24 @@ delete from customers
 where id in (select id
              from double_cust
              where double_cust.r_n != 1)
-    and id > 3000
+    and id > 3000;
+
+-- 26. Доп задание
+-- Получить список брендов и салонов, в которых эти бренды предствлены
+create temp table if not exists tempic as
+select br.brand, sh.full_name
+from (automobiles au join manufacturers br on au.brand = br.brand) join showrooms sh on showroom_ogrn = sh.ogrn;
+
+select brand, string_agg(full_name, '; ')
+from tempic
+group by brand;
+
+select full_name, string_agg(brand, '; ')
+from tempic
+group by full_name;
+
+
+select *
+from automobiles
+
+

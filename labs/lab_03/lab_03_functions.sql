@@ -142,7 +142,7 @@ begin
 end
 $$ language plpgsql;
 
-call FindModel('%az%');
+call FindModel('%1%');
 
 -- Хранимая процедура доступа к метаданным
 -- Информация о типах полей заданной таблицы
@@ -196,6 +196,7 @@ create trigger update_my
 after update on automobiles
 for each row
 execute procedure updateTrigger();
+
 
 -- Запрос, после которого сработает триггер
 update automobiles
