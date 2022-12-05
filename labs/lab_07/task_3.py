@@ -80,9 +80,12 @@ def print_manufacturers(brand):
 
 
 def adding(vin, brand, model, price, prod_year, transmission, gearbox, showroom_ogrn, anc_auto):
-    Automobiles.create(vin=vin, brand=brand, model=model, price=price, prod_year=prod_year, transmission=transmission,
-                       gearbox=gearbox, showroom_ogrn=showroom_ogrn, anc_auto=anc_auto)
-    print("Added!")
+    try:
+        Automobiles.create(vin=vin, brand=brand, model=model, price=price, prod_year=prod_year, transmission=transmission,
+                           gearbox=gearbox, showroom_ogrn=showroom_ogrn, anc_auto=anc_auto)
+        print("Added!")
+    except Exception as exc:
+        print(exc)
 
 
 def updating(brand, sale):
@@ -128,17 +131,20 @@ def request_03():
     print_automobiles()
 
     print("-- Удаление из таблицы")
-    brand = "Rest"
+    brand = "Verkeerd"
     print_manufacturers(brand)
     deleting(brand)
     print_manufacturers(brand)
 
 
 def request_04():
-    cursor = db.cursor()
-    print("Названия моделей, имеющих заданную подстроку (цифру 1)")
-    cursor.execute("call UpdatePriceForBrand(20, 'Toyota')")
-    print_automobiles()
+    try:
+        cursor = db.cursor()
+        print("Увеличение цены автомобилей заданного бренда на заданный процент")
+        cursor.execute("call UpdatePriceForBrand(20, 'Toyota')")
+        print_automobiles()
+    except Exception as exc:
+        print(exc)
 
 
 def task_3():
